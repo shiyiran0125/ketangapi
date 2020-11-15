@@ -18,9 +18,10 @@ public class JsonData {
     public JsonData() {
     }
 
-    public JsonData(int code, Object data) {
+
+    public JsonData(int code, String msg) {
         this.code = code;
-        this.data = data;
+        this.msg = msg;
     }
 
     public JsonData(int code, Object data, String msg) {
@@ -29,16 +30,14 @@ public class JsonData {
         this.msg = msg;
     }
 
-    public static JsonData buildSuccess(Object data) {
-        return new JsonData(0, data);
-    }
+
 
     public static JsonData buildError(String msg) {
         return new JsonData(-1, "", msg);
     }
 
-    public static JsonData buildError(int code, String msg) {
-        return new JsonData(code, "", msg);
+    public static JsonData Error(String msg) {
+        return new JsonData(401, "", msg);
     }
 
     public int getCode() {

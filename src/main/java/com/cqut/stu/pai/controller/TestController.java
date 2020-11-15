@@ -17,7 +17,7 @@ public class TestController {
      */
     @ApiOperation(value = "简短描述方法的作用",notes = "备注方法的详细作用")
     @ApiImplicitParam(paramType = "path",name = "id",value = "参数的描述信息",required = true)
-    @GetMapping("/hello{id}")
+    @GetMapping("/hello/{id}")
     @ResponseBody
     public String getHello(@PathVariable Integer id){
         return "hello:" + id;
@@ -34,7 +34,7 @@ public class TestController {
             @ApiResponse(code = 200,message = "成功"),
             @ApiResponse(code = 500,message = "失败")
     })
-    @GetMapping("/login{userId}")
+    @GetMapping("/login/{userId}")
     public String toAdmin(@PathVariable Integer userId){
         return "index:" + userId;
     }
