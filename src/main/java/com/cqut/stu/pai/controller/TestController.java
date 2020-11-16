@@ -2,7 +2,6 @@ package com.cqut.stu.pai.controller;
 
 import com.cqut.stu.pai.entity.User;
 import io.swagger.annotations.*;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,8 +18,8 @@ public class TestController {
     @ApiImplicitParam(paramType = "path",name = "id",value = "参数的描述信息",required = true)
     @GetMapping("/hello/{id}")
     @ResponseBody
-    public String getHello(@PathVariable Integer id){
-        return "hello:" + id;
+    public String getHello(@PathVariable Integer id) {
+       return "hello";
     }
 
     /**

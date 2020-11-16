@@ -4,9 +4,9 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
-    url: jdbc:mysql://155.32.0.12:3306/ketangpai?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
-    data-username: root
-    data-password: shiyiran
+    url: jdbc:mysql://155.32.0.12:3306/pai?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: root
+    password: shiyiran
   thymeleaf:
     cache: true
     mode: HTML5

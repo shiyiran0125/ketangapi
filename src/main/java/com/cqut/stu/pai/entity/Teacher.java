@@ -1,9 +1,13 @@
 package com.cqut.stu.pai.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,13 +19,23 @@ import java.util.List;
  * @description: 教师类
  * @date 2020-11-14 16:43:16
  */
+@Component
+@ApiModel
 public class Teacher implements UserDetails {
+    @ApiModelProperty(value = "id")
     private Integer id;
+    @ApiModelProperty(value = "用户昵称")
     private String name;
+    @ApiModelProperty(value = "账号")
     private String username;
+    @ApiModelProperty(value = "密码")
     private String password;
+    @ApiModelProperty(value = "学校")
     private String school;
+    @ApiModelProperty(value = "账号状态")
+    @JsonProperty("Enabled")
     private Boolean Enabled;
+    @ApiModelProperty(value = "角色")
     private List<Role> roles;
 
     public Teacher(){}
@@ -104,9 +118,6 @@ public class Teacher implements UserDetails {
         this.school = school;
     }
 
-    public Boolean getEnabled() {
-        return Enabled;
-    }
 
     public void setEnabled(Boolean enabled) {
         Enabled = enabled;

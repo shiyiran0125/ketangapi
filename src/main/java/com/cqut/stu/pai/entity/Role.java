@@ -1,16 +1,19 @@
 package com.cqut.stu.pai.entity;
 
+import org.springframework.stereotype.Component;
+
 /**
  * @author 石益然
  * @program: pai
  * @description: 这是封装角色的类
  * @date 2020-11-14 16:36:02
  */
+@Component
 public class Role {
     private Integer id;
     private String name;//角色英语名
     private String nameCh;//中文名字
-
+    public Role(){}
     public Role(Integer id, String name, String nameCh) {
         this.id = id;
         this.name = name;

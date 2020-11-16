@@ -1,11 +1,14 @@
 package com.cqut.stu.pai.entity;
 
+import org.springframework.stereotype.Component;
+
 /**
  * @author 石益然
  * @program: ketangpai
  * @description: 这是一个封装自定义返回消息的JSON类
  * @date 2020-11-11 11:15:11
  */
+@Component
 public class JsonData {
     //错误码
     private int code;
@@ -32,12 +35,12 @@ public class JsonData {
 
 
 
-    public static JsonData buildError(String msg) {
-        return new JsonData(-1, "", msg);
+    public static JsonData success(String msg,Object data) {
+        return new JsonData(200, data, msg);
     }
 
     public static JsonData Error(String msg) {
-        return new JsonData(401, "", msg);
+        return new JsonData(400, "", msg);
     }
 
     public int getCode() {

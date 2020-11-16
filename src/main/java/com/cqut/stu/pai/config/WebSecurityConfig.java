@@ -78,7 +78,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/admin/login")
+                .antMatchers("/admin/login","/teacher/register","/student/register","/test/**")
                 .permitAll()
                 .antMatchers("/admin/**")
                 .hasRole("ADMIN")
@@ -149,8 +149,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 .and()
                 .csrf()
-                .disable();
-                /*.exceptionHandling()
+                .disable()
+                .exceptionHandling()
                 .authenticationEntryPoint(new AuthenticationEntryPoint() {
                     //未认证时访问不要重定向返回JSON格式数据
                     @Override
@@ -166,7 +166,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         out.flush();
                         out.close();
                     }
-                })*/
+                });
         //http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 }

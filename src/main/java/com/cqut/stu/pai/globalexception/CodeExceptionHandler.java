@@ -2,6 +2,7 @@ package com.cqut.stu.pai.globalexception;
 import com.cqut.stu.pai.entity.JsonData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 
 /**
  * @author 石益然
@@ -89,9 +91,19 @@ public class CodeExceptionHandler {
         return new JsonData(415,null,e.getMessage());
     }
 
+    /**
+     * 操作数据或库出现异常
+     */
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(DuplicateKeyException.class)
+    public JsonData handleException(DuplicateKeyException e) {
+        logger.error("操作数据库出现异常:", e);
+        return new JsonData(400,null,e.getMessage());
+    }
+
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     @ExceptionHandler(Exception.class)
-    public JsonData defaultErrorHandler(HttpMediaTypeNotSupportedException e){
+    public JsonData defaultErrorHandler(Exception e){
         logger.error("服务器端异常",e);
         return new JsonData(500,null,e.getMessage());
     }
