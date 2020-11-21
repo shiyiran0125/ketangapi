@@ -3,9 +3,6 @@ package com.cqut.stu.pai.config;
 import com.cqut.stu.pai.entity.JsonData;
 import com.cqut.stu.pai.entity.Student;
 import com.cqut.stu.pai.entity.Teacher;
-import com.cqut.stu.pai.util.AdminAuthenticationProvider;
-import com.cqut.stu.pai.util.StudentAuthenticationProvider;
-import com.cqut.stu.pai.util.TeacherAuthenticationProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +14,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 import javax.servlet.ServletException;
@@ -78,60 +75,35 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests()
-                .antMatchers("/admin/login","/teacher/register","/student/register","/test/**")
+                .antMatchers("/teacher/register","/student/register")
                 .permitAll()
                 .antMatchers("/admin/**")
                 .hasRole("ADMIN")
                 .antMatchers(("/student/**"))
-                .access("hasAnyAuthority('ADMIN','STUDENT')")
+                .access("hasAnyRole('ADMIN','STUDENT')")
                 .antMatchers(("/teacher/**"))
-                .access("hasAnyAuthority('ADMIN','TEACHER')")
+                .access("hasAnyRole('ADMIN','TEACHER')")
+                /*.permitAll()*/
+                .antMatchers("/File/**")
+                .access("hasAnyRole('STUDENT','TEACHER','ADMIN')")
                 .antMatchers("/webjars/springfox-swagger-ui","/webjars/springfox-swagger-ui/**").permitAll()//过滤Swagger相关路径
                 .anyRequest()
                 .authenticated()
                 .and()
+                .addFilterAt(myAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .formLogin()
-                .loginProcessingUrl("/login")
-                .successHandler(new AuthenticationSuccessHandler() {
+                .loginProcessingUrl("/doLogin")
+                .successForwardUrl("/admin/index")
+                /*.successHandler(new AuthenticationSuccessHandler() {
                     @Override
                     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-                        response.setContentType("application/json;charset=utf-8");
-                        PrintWriter out = response.getWriter();
-                        Object user = authentication.getPrincipal();
-                        String name = "";
-                        if (user instanceof Student){
-                            ((Student) user).setPassword(null);
-                            name = ((Student) user).getUsername();
-                        }else{
-                            ((Teacher) user).setPassword(null);
-                            name = ((Teacher) user).getUsername();
-                        }
-//                        HttpSession session = request.getSession();
-//                        session.setAttribute("loinUser",user.getId());
-//                        redisTemplate.opsForValue().set("loginUser:" + user.getId(), session.getId());
-                        JsonData ok = new JsonData(200,user,"登录成功！"+ name);
-                        String s = new ObjectMapper().writeValueAsString(ok);
-                        out.write(s);
-                        out.flush();
-                        out.close();
                     }
                 })
                 .failureHandler(new AuthenticationFailureHandler() {
                     @Override
                     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-                        response.setContentType("application/json;charset=utf-8");
-                        PrintWriter out = response.getWriter();
-                        JsonData error = new JsonData(200,"登录失败");
-                        if(exception instanceof BadCredentialsException){
-                            error.setMsg("用户名或密码错误，请重新输入");
-                        } else if(exception instanceof DisabledException) {
-                            error.setMsg("账户被锁定");
-                        }
-                        out.write(new ObjectMapper().writeValueAsString(error));
-                        out.flush();
-                        out.close();
                     }
-                })
+                })*/
                 .permitAll()
                 .and()
                 .logout()
@@ -147,6 +119,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     }
                 })
                 .permitAll()
+                .and()
+                .cors()
                 .and()
                 .csrf()
                 .disable()
@@ -168,5 +142,56 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     }
                 });
         //http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+    }
+
+    @Bean
+    MyAuthenticationFilter myAuthenticationFilter() throws Exception{
+        MyAuthenticationFilter filter = new MyAuthenticationFilter();
+        filter.setAuthenticationManager(super.authenticationManagerBean());
+        filter.setFilterProcessesUrl("/uLogin");
+        filter.setAuthenticationSuccessHandler(new AuthenticationSuccessHandler() {
+            @Override
+            public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+                response.setContentType("application/json;charset=utf-8");
+                PrintWriter out = response.getWriter();
+                Object user = authentication.getPrincipal();
+                String name = "";
+                String role = "";
+                if (user instanceof Student){
+                    ((Student) user).setPassword(null);
+                    name = ((Student) user).getUsername();
+                    role = "student";
+                }else{
+                    ((Teacher) user).setPassword(null);
+                    name = ((Teacher) user).getUsername();
+                    role = "teacher";
+                }
+//                        HttpSession session = request.getSession();
+//                        session.setAttribute("loinUser",user.getId());
+//                        redisTemplate.opsForValue().set("loginUser:" + user.getId(), session.getId());
+                JsonData ok = new JsonData(200,role,"登录成功！"+ name);
+                String s = new ObjectMapper().writeValueAsString(ok);
+                out.write(s);
+                out.flush();
+                out.close();
+            }
+        });
+        filter.setAuthenticationFailureHandler(new AuthenticationFailureHandler() {
+            @Override
+            public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
+                response.setContentType("application/json;charset=utf-8");
+                PrintWriter out = response.getWriter();
+                JsonData error = new JsonData(400,"登录失败");
+                if(exception instanceof BadCredentialsException){
+                    error.setMsg("用户名或密码错误，请重新输入");
+                } else if(exception instanceof DisabledException) {
+                    error.setMsg("账户被锁定");
+                }
+                out.write(new ObjectMapper().writeValueAsString(error));
+                out.flush();
+                out.close();
+            }
+        });
+        return filter;
     }
 }

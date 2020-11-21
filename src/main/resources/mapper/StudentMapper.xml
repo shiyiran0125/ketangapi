@@ -4,6 +4,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cqut.stu.pai.mapper.StudentMapper">
     <!--注册-->
+    <select id="haveExistInTea" parameterType="String" resultType="Integer">
+        select count(*) from teacher where username=#{username};
+    </select>
     <insert id="register" parameterType="com.cqut.stu.pai.entity.Student">
         insert into student(name,username,password,sid,school,Enabled) value (
               #{name},#{username},#{password},#{sid},#{school},#{Enabled})
@@ -22,4 +25,20 @@
     <select id="loadUserByUsername"  resultMap="loadUserMap" parameterType="java.lang.String">
         select * from student where username = #{username}
     </select>
+
+    <!--获取课程列表-->
+    <select id="getCourseList" parameterType="java.lang.Integer" resultType="com.cqut.stu.pai.entity.response.CourseWithStudent">
+       SELECT course.*,Archive,Top,H_id,H_name,max(Date_issue)
+FROM course inner join course_s on course.C_code=course_s.C_code and course_s.S_id=#{userId}
+left outer join homework on course.C_code=homework.C_code
+group by C_code
+    </select>
+
+    <!--添加课程-->
+    <select id="getCountOfCourse" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select count(*) from course where C_code=#{C_code}
+    </select>
+    <insert id="addStuCou">
+        insert into course_s(C_code,S_id,Archive,Top,Time) value (#{C_code},#{userId},0,0,#{Time})
+    </insert>
 </mapper>

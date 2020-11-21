@@ -52,6 +52,7 @@ public class Teacher implements UserDetails {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         for (Role role : roles) {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
+            System.out.println("ROLE_" + role.getName());
         }
         return authorities;
     }

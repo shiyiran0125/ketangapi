@@ -1,4 +1,4 @@
-package com.cqut.stu.pai.util;
+package com.cqut.stu.pai.config;
 
 import com.cqut.stu.pai.entity.Role;
 import com.cqut.stu.pai.entity.Teacher;

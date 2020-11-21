@@ -23,7 +23,7 @@ public class SwaggerConfig {
     public Docket createRestApi() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.cqut.stu.ketangpai.controller"))
+                .apis(RequestHandlerSelectors.basePackage("com.cqut.stu.pai.controller"))
                 .paths(PathSelectors.any())
                 .build().apiInfo(new ApiInfoBuilder()
                         .title("课堂派文档")

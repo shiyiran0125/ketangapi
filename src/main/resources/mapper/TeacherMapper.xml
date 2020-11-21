@@ -4,6 +4,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cqut.stu.pai.mapper.TeacherMapper">
     <!--注册-->
+    <select id="haveExistInStu" parameterType="String" resultType="Integer">
+        select count(*) from student where username=#{username};
+    </select>
     <insert id="register" parameterType="com.cqut.stu.pai.entity.Teacher">
         insert into teacher(name,username,password,school,Enabled) value (
               #{name},#{username},#{password},#{school},#{Enabled})
@@ -21,4 +24,126 @@
     <select id="loadUserByUsername"  resultMap="loadUserMap" parameterType="java.lang.String">
         select * from teacher where username = #{username}
     </select>
+
+    <!--获取课程列表-->
+    <select id="getCourseList" parameterType="java.lang.Integer" resultType="com.cqut.stu.pai.entity.response.CourseWithTeacher">
+       SELECT course.*,Archive,Top,H_id,H_name,max(Date_issue)
+FROM course inner join course_t on course.C_code=course_t.C_code and course_t.T_id=#{userId}
+left outer join homework on course.C_code=homework.C_code
+group by C_code
+
+    </select>
+
+    <!--添加课程-->
+    <select id="getCountOfCourse" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select count(*) from course where C_code=#{C_code}
+    </select>
+    <insert id="addCourse" parameterType="com.cqut.stu.pai.entity.Course">
+        insert into course(C_code,C_name,C_cname,C_year,C_term,Codeuse,C_info,T_name,C_menber)
+        value(
+          #{C_code},#{C_name},#{C_cname},#{C_year},#{C_term},#{Codeuse},#{C_info},#{T_name},#{C_menber}
+        )
+    </insert>
+    <insert id="addTeaCou">
+        insert into course_t(C_code,T_id,Archive,Top) value (#{C_code},#{userId},0,0)
+    </insert>
+
+    <!--修改课程-->
+    <update id="modifyCourse" parameterType="com.cqut.stu.pai.entity.Course">
+        update course set C_name=#{C_name},C_cname=#{C_cname},C_year=#{C_year},C_term=#{C_term},C_info=#{C_info}
+        where C_code=#{C_code}
+    </update>
+
+    <!--删除课程-->
+    <delete id="deleteCt" parameterType="java.lang.String">
+        delete from course_t where C_code=#{C_code}
+    </delete>
+    <delete id="deleteCourse" parameterType="java.lang.String">
+        delete from course where C_code=#{C_code}
+    </delete>
+
+    <!--置顶与取消-->
+    <update id="topCourse">
+        update course_t set Top=1 where T_id=#{T_id} and C_code=#{C_code}
+    </update>
+    <update id="notTopCourse">
+        update course_t set Top=0 where T_id=#{T_id} and C_code=#{C_code}
+    </update>
+
+    <!--加课码启用与否-->
+    <update id="courseCodeUse" parameterType="java.lang.String">
+        update course set Codeuse=1 where C_code=#{C_code}
+    </update>
+    <update id="courseCodeStop" parameterType="java.lang.String">
+        update course set Codeuse=0 where C_code=#{C_code}
+    </update>
+
+    <!--课程归档与否-->
+    <update id="guiDangCourseUse">
+        update course_t set Archive=1 where T_id=#{T_id} and C_code=#{C_code}
+    </update>
+    <update id="guiDangCourseStop">
+        update course_t set Archive=0 where T_id=#{T_id} and C_code=#{C_code}
+    </update>
+
+    <!--获取所有作业-->
+    <select id="getHomeworkList" parameterType="java.lang.String" resultType="com.cqut.stu.pai.entity.Homework">
+        select * from homework where C_code=#{C_code}
+    </select>
+
+    <!--发布作业-->
+    <insert id="addHomework" parameterType="com.cqut.stu.pai.entity.Homework">
+        INSERT INTO homework (C_code, Type, Date_issue, H_name, Content, Annex, Corrected, Uncorrected, Submitted, Unsubmitted, Deadline, Score)
+        VALUES (#{C_code}, #{Type}, #{Date_issue}, #{H_name}, #{Content}, #{Annex}, #{Corrected}, #{Uncorrected}, #{Submitted}, #{Unsubmitted}, #{Deadline}, #{Score});
+
+    </insert>
+
+    <!--修改作业-->
+    <update id="modifyHomework" parameterType="com.cqut.stu.pai.entity.Homework">
+        update homework set H_name=#{H_name},Content=#{Content},Deadline=#{Deadline},Score=#{Score}
+        where H_id=#{H_id}
+    </update>
+
+    <!--删除作业-->
+    <delete id="deleteStuHom" parameterType="java.lang.String">
+        delete from stu_work where H_id=#{H_id}
+    </delete>
+    <delete id="deleteHomework" parameterType="java.lang.String">
+        delete from homework where H_id=#{H_id}
+    </delete>
+
+    <!--得到某作业下所有学生的提交作业-->
+    <select id="getStuHomework" resultType="com.cqut.stu.pai.entity.response.StuHomework" parameterType="java.lang.String">
+        SELECT username as S_id,name as S_name,stu_work.Score,homework.Score as fullScore,Submit_time,Correct_count,State
+FROM stu_work left outer join student on  stu_work.H_id =#{H_id} and stu_work.S_id=student.id
+left outer join homework on homework.H_id=#{H_id}
+    </select>
+
+    <!--根据课程ID获取某课程的所有老师、学生-->
+    <select id="getTeaMen" parameterType="String" resultType="com.cqut.stu.pai.entity.response.MenberOfTeacher">
+        SELECT name,username FROM course_t,teacher where course_t.C_code = #{C_code}
+        and  course_t.T_id = teacher.id
+    </select>
+    <select id="getStuMen" parameterType="String" resultType="com.cqut.stu.pai.entity.response.MenberOfStudent">
+        SELECT sid,name,username,Time as date FROM course_s,student where course_s.C_code =  #{C_code}
+        and  course_s.S_id = student.id
+    </select>
+
+    <!--修改学生信息-->
+    <select id="getStuBySid" resultType="Integer">
+        select count(*) from student where sid=#{sid} and username != #{username}
+    </select>
+    <update id="modifyStudent" parameterType="com.cqut.stu.pai.entity.response.MenberOfStudent">
+        update student set name=#{name},sid=#{sid} where username=#{username}
+    </update>
+
+    <!--删除课程下的学生-->
+    <delete id="deleteStuHome" parameterType="String">
+        delete from stu_work where S_id = (select id from student where username= #{username})
+        and H_id in (select H_id from homework where C_code=#{C_code})
+    </delete>
+    <delete id="deleteStudent" parameterType="String">
+        delete from course_s where C_code=#{C_code} and S_id = (select id from student where username= #{username})
+    </delete>
+
 </mapper>
