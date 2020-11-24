@@ -165,4 +165,10 @@ public class TeacherController {
         return teacherService.deleteStudent(username,C_code);
     }
 
+    @ApiOperation(value="批改作业",notes = "批改课程作业")
+    @PutMapping("/ModifyScore/{H_id}/{sid}/{Score}")
+    public JsonData modifyScore(@PathVariable("H_id") Integer H_id,@PathVariable("sid") String sid,@PathVariable("Score") Integer Score){
+        return teacherService.modifyScore(H_id,sid,Score);
+    }
+
 }

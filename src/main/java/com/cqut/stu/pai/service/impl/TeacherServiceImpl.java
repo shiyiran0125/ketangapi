@@ -230,12 +230,19 @@ public class TeacherServiceImpl implements TeacherService, UserDetailsService {
     @Override
     public JsonData addHomework(MultipartFile file, Homework homework, HttpServletRequest request) {
         String Url = FileUpload.uploadFile(file,request);
+        List<Integer> list = teacherMapper.getAllStuInCourse(homework.getC_code());
         homework.setAnnex(Url);
         homework.setSubmitted(0);
-        homework.setUnsubmitted(0);
+        homework.setUnsubmitted(list.size());
         homework.setUncorrected(0);
         homework.setCorrected(0);
         teacherMapper.addHomework(homework);
+        List<StudentWithHomework> listStuWithHom = new ArrayList<>();
+        for (Integer S_id:list
+             ) {
+            listStuWithHom.add(new StudentWithHomework(homework.getH_id(),S_id,0));
+        }
+        teacherMapper.insertToStuWor(listStuWithHom);
         return new JsonData(200,"","success");
     }
 
@@ -307,6 +314,14 @@ public class TeacherServiceImpl implements TeacherService, UserDetailsService {
     public JsonData deleteStudent(String username,String C_code){
         teacherMapper.deleteStuHome(username,C_code);
         teacherMapper.deleteStudent(username,C_code);
+        teacherMapper.updateHomework(C_code);
+        return new JsonData(200,"","success");
+    }
+
+    public JsonData modifyScore(Integer H_id, String sid,Integer Score){
+        teacherMapper.modifyScore(H_id,sid,Score);
+        String C_code = teacherMapper.getCodeByHid(H_id);
+        teacherMapper.updateHomework(C_code);
         return new JsonData(200,"","success");
     }
 }

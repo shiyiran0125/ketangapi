@@ -52,7 +52,9 @@ public interface TeacherMapper {
     public List<Homework> getHomeworkList(String C_code);
 
     //添加作业
+    public List<Integer> getAllStuInCourse(String C_code);
     public void addHomework(Homework homework);
+    public void insertToStuWor(List<StudentWithHomework> list);
 
     //修改作业
     public void modifyHomework(Homework homework);
@@ -76,4 +78,11 @@ public interface TeacherMapper {
     //删除课程下的学生
     public void deleteStuHome(String username,String C_code);
     public void deleteStudent(String username,String C_code);
+
+    //更新作业表
+    public void updateHomework(String C_code);
+
+    //
+    public void modifyScore(Integer H_id, String sid,Integer Score);
+    public String getCodeByHid(Integer H_id);
 }

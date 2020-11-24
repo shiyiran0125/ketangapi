@@ -30,7 +30,7 @@
     <select id="getCourseList" parameterType="java.lang.Integer" resultType="com.cqut.stu.pai.entity.response.CourseWithStudent">
        SELECT course.*,Archive,Top,H_id,H_name,max(Date_issue)
 FROM course inner join course_s on course.C_code=course_s.C_code and course_s.S_id=#{userId}
-left outer join homework on course.C_code=homework.C_code
+left outer join (select * from homework order by Date_issue desc limit 10) homework on course.C_code=homework.C_code
 group by C_code
     </select>
 
@@ -41,4 +41,86 @@ group by C_code
     <insert id="addStuCou">
         insert into course_s(C_code,S_id,Archive,Top,Time) value (#{C_code},#{userId},0,0,#{Time})
     </insert>
+    <select id="getAllHomeIdOfCourse" parameterType="String" resultType="Integer">
+        select H_id from homework where C_code=#{C_code}
+    </select>
+    <insert id="insertToStuWor">
+        insert into stu_work(H_id,S_id,State)
+        values
+        <foreach item="item" index="index" collection="list"
+                 separator=",">
+            (#{item.H_id},#{item.S_id},#{item.State})
+        </foreach>
+    </insert>
+    <update id="updateUnSubmitted">
+        update homework set Unsubmitted=Unsubmitted+1
+           where H_id in
+            <foreach item="item" index="index" collection="list"
+                     separator="," open="(" close=")">
+            #{item}
+            </foreach>
+    </update>
+
+
+    <!--置顶与取消-->
+    <update id="topCourse">
+        update course_s set Top=1 where S_id=#{S_id} and C_code=#{C_code}
+    </update>
+    <update id="notTopCourse">
+        update course_s set Top=0 where S_id=#{S_id} and C_code=#{C_code}
+    </update>
+
+    <!--课程归档与否-->
+    <update id="guiDangCourseUse">
+        update course_s set Archive=1 where S_id=#{S_id} and C_code=#{C_code}
+    </update>
+    <update id="guiDangCourseStop">
+        update course_s set Archive=0 where S_id=#{S_id} and C_code=#{C_code}
+    </update>
+
+    <!--删除课程下的学生-->
+    <delete id="deleteStuHome" parameterType="String">
+        delete from stu_work where S_id = (select id from student where username= #{username})
+        and H_id in (select H_id from homework where C_code=#{C_code})
+    </delete>
+    <delete id="deleteStudent" parameterType="String">
+        delete from course_s where C_code=#{C_code} and S_id = (select id from student where username= #{username})
+    </delete>
+
+    <!--获取所有作业-->
+    <select id="getHomeworkList" resultType="com.cqut.stu.pai.entity.response.StudentAllHomeworkInCourse">
+       SELECT homework.H_id,C_code,Type,Date_issue,H_name,Content,Annex,Deadline,homework.Score,State
+       FROM homework,stu_work
+       where C_code = #{C_code} and homework.H_id=stu_work.H_id and S_id=#{S_id}
+    </select>
+
+    <!--提交作业-->
+    <update id="commitHomework">
+        update stu_work set Answer=#{Answer},State=1,Submit_time=#{Submit_time}
+        where H_id=#{H_id} and S_id=#{S_id}
+    </update>
+    <update id="modifySubmit" parameterType="Integer">
+        update homework set Submitted=Submitted+1,Unsubmitted=Unsubmitted-1,Uncorrected=Uncorrected+1 where H_id=#{H_id}
+    </update>
+
+    <!--根据课程ID获取某课程的所有老师、学生-->
+    <select id="getTeaMen" parameterType="String" resultType="com.cqut.stu.pai.entity.response.MenberOfTeacher">
+        SELECT name,username FROM course_t,teacher where course_t.C_code = #{C_code}
+        and  course_t.T_id = teacher.id
+    </select>
+    <select id="getStuMen" parameterType="String" resultType="com.cqut.stu.pai.entity.response.MenberOfStudent">
+        SELECT sid,name,username,Time as date FROM course_s,student where course_s.C_code =  #{C_code}
+        and  course_s.S_id = student.id
+    </select>
+
+    <!--更新作业表-->
+    <update id="updateHomework" parameterType="String">
+        update homework
+        set
+        Corrected= (select count(*) from stu_work where H_id=homework.H_id and Correct_count>0),
+        Uncorrected=(select count(*) from stu_work where H_id=homework.H_id and State=1),
+        Submitted=(select count(*) from stu_work where State>0 and H_id=homework.H_id),
+        Unsubmitted=(select count(*) from stu_work where State=0 and H_id=homework.H_id)
+        where C_code = #{C_code}
+    </update>
 </mapper>

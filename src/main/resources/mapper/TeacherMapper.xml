@@ -29,7 +29,7 @@
     <select id="getCourseList" parameterType="java.lang.Integer" resultType="com.cqut.stu.pai.entity.response.CourseWithTeacher">
        SELECT course.*,Archive,Top,H_id,H_name,max(Date_issue)
 FROM course inner join course_t on course.C_code=course_t.C_code and course_t.T_id=#{userId}
-left outer join homework on course.C_code=homework.C_code
+left outer join (select * from homework order by Date_issue desc limit 10) homework on course.C_code=homework.C_code
 group by C_code
 
     </select>
@@ -92,10 +92,23 @@ group by C_code
     </select>
 
     <!--发布作业-->
+    <select id="getAllStuInCourse" resultType="Integer">
+        select S_id from course_s where C_code=#{C_code}
+    </select>
     <insert id="addHomework" parameterType="com.cqut.stu.pai.entity.Homework">
+        <selectKey keyProperty="H_id" resultType="Integer" order="AFTER">
+            select LAST_INSERT_ID()
+        </selectKey>
         INSERT INTO homework (C_code, Type, Date_issue, H_name, Content, Annex, Corrected, Uncorrected, Submitted, Unsubmitted, Deadline, Score)
         VALUES (#{C_code}, #{Type}, #{Date_issue}, #{H_name}, #{Content}, #{Annex}, #{Corrected}, #{Uncorrected}, #{Submitted}, #{Unsubmitted}, #{Deadline}, #{Score});
-
+    </insert>
+    <insert id="insertToStuWor">
+        insert into stu_work(H_id,S_id,State)
+        values
+        <foreach item="item" index="index" collection="list"
+                  separator=",">
+            (#{item.H_id},#{item.S_id},#{item.State})
+        </foreach>
     </insert>
 
     <!--修改作业-->
@@ -114,9 +127,9 @@ group by C_code
 
     <!--得到某作业下所有学生的提交作业-->
     <select id="getStuHomework" resultType="com.cqut.stu.pai.entity.response.StuHomework" parameterType="java.lang.String">
-        SELECT username as S_id,name as S_name,stu_work.Score,homework.Score as fullScore,Submit_time,Correct_count,State
-FROM stu_work left outer join student on  stu_work.H_id =#{H_id} and stu_work.S_id=student.id
-left outer join homework on homework.H_id=#{H_id}
+        SELECT sid as S_id,name as S_name,stu_work.Score,homework.Score as fullScore,Submit_time,Correct_count,State
+        FROM stu_work,student,homework
+        where stu_work.H_id =#{H_id} and stu_work.S_id=student.id and homework.H_id=#{H_id}
     </select>
 
     <!--根据课程ID获取某课程的所有老师、学生-->
@@ -146,4 +159,23 @@ left outer join homework on homework.H_id=#{H_id}
         delete from course_s where C_code=#{C_code} and S_id = (select id from student where username= #{username})
     </delete>
 
+    <!--更新作业表-->
+    <update id="updateHomework" parameterType="String">
+        update homework
+        set
+        Corrected= (select count(*) from stu_work where H_id=homework.H_id and Correct_count>0),
+        Uncorrected=(select count(*) from stu_work where H_id=homework.H_id and State=1),
+        Submitted=(select count(*) from stu_work where State>0 and H_id=homework.H_id),
+        Unsubmitted=(select count(*) from stu_work where State=0 and H_id=homework.H_id)
+        where C_code = #{C_code}
+    </update>
+
+    <!--批改作业-->
+    <select id="getCodeByHid" parameterType="Integer" resultType="String">
+        select C_code from homework where H_id=#{H_id}
+    </select>
+    <update id="modifyScore">
+        update stu_work set Score=#{Score},State=2,Correct_count=Correct_count+1
+        where H_id=#{H_id} and S_id=(select id from student where sid=#{sid})
+    </update>
 </mapper>

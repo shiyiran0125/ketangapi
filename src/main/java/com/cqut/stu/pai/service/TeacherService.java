@@ -63,4 +63,7 @@ public interface TeacherService {
 
     //删除课程下的学生
     public JsonData deleteStudent(String username,String C_code);
+
+    //批改作业
+    public JsonData modifyScore(Integer H_id, String sid,Integer Score);
 }

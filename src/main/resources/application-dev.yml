@@ -24,4 +24,3 @@ debug: false
 logging:
   file:
     path: D:/ketangpai-dev.log
-
