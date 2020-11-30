@@ -24,7 +24,7 @@ import java.util.List;
 public class Teacher implements UserDetails {
     @ApiModelProperty(value = "id")
     private Integer id;
-    @ApiModelProperty(value = "用户昵称")
+    @ApiModelProperty(value = "用户姓名")
     private String name;
     @ApiModelProperty(value = "账号")
     private String username;
@@ -32,6 +32,11 @@ public class Teacher implements UserDetails {
     private String password;
     @ApiModelProperty(value = "学校")
     private String school;
+
+    @ApiModelProperty(value = "账号是否锁定")
+    @JsonProperty("accountNonLocked")
+    private Boolean accountNonLocked;
+
     @ApiModelProperty(value = "账号状态")
     @JsonProperty("Enabled")
     private Boolean Enabled;
@@ -52,7 +57,6 @@ public class Teacher implements UserDetails {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         for (Role role : roles) {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
-            System.out.println("ROLE_" + role.getName());
         }
         return authorities;
     }
@@ -74,7 +78,7 @@ public class Teacher implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return accountNonLocked;
     }
 
     @Override
@@ -130,5 +134,9 @@ public class Teacher implements UserDetails {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public void setAccountNonLocked(Boolean accountNonLocked) {
+        this.accountNonLocked = accountNonLocked;
     }
 }

@@ -3,7 +3,10 @@ package com.cqut.stu.pai.config;
 import com.cqut.stu.pai.entity.JsonData;
 import com.cqut.stu.pai.entity.Student;
 import com.cqut.stu.pai.entity.Teacher;
+import com.cqut.stu.pai.entity.response.LogVo;
+import com.cqut.stu.pai.service.LogService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -40,6 +43,7 @@ import java.io.PrintWriter;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
     /**
      * @describe: 返回一个密码编码器
      * @return PasswordEncoder
@@ -67,6 +71,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         //过滤路径
         web.ignoring()
                 .antMatchers("/static/**")
+                .antMatchers("/layui/**")
+                .antMatchers("/images/**")
                 .antMatchers("/swagger-ui.html")//过滤Swagger相关路径
                 .antMatchers("/v2/**")
                 .antMatchers("/swagger-resources/**");
@@ -74,10 +80,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        http.headers().contentTypeOptions().disable();
+        http.headers().frameOptions().disable();
         http.authorizeRequests()
-                .antMatchers("/teacher/register","/student/register")
+                .antMatchers("/teacher/register","/student/register","/admin/login")
                 .permitAll()
-                .antMatchers("/admin/**")
+                .antMatchers("/admin/**","/adminData/**")
                 .hasRole("ADMIN")
                 .antMatchers(("/student/**"))
                 .access("hasAnyRole('ADMIN','STUDENT')")

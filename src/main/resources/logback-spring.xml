@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="logdir1" value="D:\\mylogs"></property>
+    <property name="logdir2" value="D:\\mylogs"></property>
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%yellow(%date{yyyy-MM-dd HH:mm:ss}) |%highlight(%-5level) |%blue(%thread) |%blue(%file:%line) |%green(%logger) |%cyan(%msg%n)"/>
+
+
+   <!-- &lt;!&ndash;输出到控制台&ndash;&gt;
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        &lt;!&ndash;此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息&ndash;&gt;
+        &lt;!&ndash; 例如：如果此处配置了INFO级别，则后面其他位置即使配置了DEBUG级别的日志，也不会被输出 &ndash;&gt;
+        &lt;!&ndash;<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>&ndash;&gt;
+        <encoder>
+            <Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
+            &lt;!&ndash; 设置字符集 &ndash;&gt;
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>-->
+    <!--输出到控制台 ConsoleAppender-->
+    <appender name="consoleLog1" class="ch.qos.logback.core.ConsoleAppender">
+        <!--展示格式 layout-->
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>
+                <pattern>%d{HH:mm:ss.SSS} %contextName [%thread] %-5level %logger{36} - %msg%n</pattern>
+            </pattern>
+        </layout>
+    </appender>
+    <appender name="serviceAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logdir1}/service.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logdir1}/service-%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <appender name="controllerAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logdir1}/controller.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+           <fileNamePattern>${logdir1}/controller-%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+         <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</pattern>
+        </encoder>
+    </appender>
+    <!--&lt;!&ndash;开发环境:打印控制台&ndash;&gt;
+    <springProfile name="dev">
+        &lt;!&ndash;可以输出项目中的debug日志，包括mybatis的sql日志&ndash;&gt;
+        <logger name="org.yixuan" level="INFO" />
+        &lt;!&ndash;
+            root节点是必选节点，用来指定最基础的日志输出级别，只有一个level属性
+            level:用来设置打印级别，大小写无关：TRACE, DEBUG, INFO, WARN, ERROR, ALL 和 OFF，默认是DEBUG
+            可以包含零个或多个appender元素。
+        &ndash;&gt;
+        <root level="INFO">
+            <appender-ref ref="CONSOLE" />
+            <appender-ref ref="INFO_FILE" />
+            <appender-ref ref="WARN_FILE" />
+            <appender-ref ref="ERROR_FILE" />
+        </root>
+    </springProfile>-->
+
+
+    <logger name="com.cqut.stu.pai.config" level="INFO" additivity="false">
+      <appender-ref ref="controllerAppender" />
+    </logger>
+
+    <!--<logger name="com.example.teacher.service.impl" level="INFO" additivity="true">
+      <appender-ref ref="serviceAppender" />
+    </logger>-->
+    <root level="INFO">
+            <appender-ref ref="consoleLog1" />
+    </root>
+</configuration>

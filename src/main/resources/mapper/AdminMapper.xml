@@ -3,5 +3,46 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cqut.stu.pai.mapper.AdminMapper">
+    <select id="getTeacherJson" resultType="com.cqut.stu.pai.entity.response.TeacherVo">
+        select * from teacher limit #{page},#{limit}
+    </select>
 
+    <select id="getStudentJson" resultType="com.cqut.stu.pai.entity.response.StudentVo">
+        select * from student limit #{page},#{limit}
+    </select>
+
+
+    <update id="locked" parameterType="Integer">
+        update teacher set accountNonLocked=#{state} where id=#{id}
+    </update>
+
+    <select id="getLocked" resultType="Boolean">
+        select accountNonLocked from teacher where id=#{id};
+    </select>
+
+    <update id="sLocked" parameterType="Integer">
+        update student set accountNonLocked=#{state} where id=#{id}
+    </update>
+
+    <select id="getStuLocked" resultType="Boolean">
+        select accountNonLocked from student where id=#{id};
+    </select>
+
+    <select id="getTeacherLog" resultType="com.cqut.stu.pai.entity.response.LogVo">
+        select * from teacherLog limit #{page},#{limit}
+    </select>
+
+    <select id="getStudentLog" resultType="com.cqut.stu.pai.entity.response.LogVo">
+        select * from studentLog limit #{page},#{limit}
+    </select>
+
+    <insert id="teacherLog" parameterType="com.cqut.stu.pai.entity.response.LogVo">
+        insert into teacherlog(username,time,type,state)
+        value(#{username},#{time},#{type},#{state})
+    </insert>
+
+    <insert id="studentLog" parameterType="com.cqut.stu.pai.entity.response.LogVo">
+        insert into studentlog(username,time,type,state)
+        value(#{username},#{time},#{type},#{state})
+    </insert>
 </mapper>
